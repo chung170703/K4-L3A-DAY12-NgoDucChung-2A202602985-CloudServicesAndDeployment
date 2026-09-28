@@ -12,7 +12,7 @@
 |-----|----------|
 | Họ và tên | Ngo Duc Chung |
 | Mã học viên | 2A202602985 |
-| Repo | https://github.com/chung170703/K4-L3A-NgoDucChung-2A202602985-Cloud-Service-And-Deployment |
+| Repo | https://github.com/chung170703/K4-L3A-DAY12-NgoDucChung-2A202602985-CloudServicesAndDeployment |
 
 ## Service
 
