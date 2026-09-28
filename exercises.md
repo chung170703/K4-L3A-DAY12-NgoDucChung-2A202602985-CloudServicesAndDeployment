@@ -3,7 +3,8 @@
 > **Bài làm cá nhân.** Trả lời bằng lời của chính bạn, dựa trên những gì bạn
 > quan sát được khi chạy code — không sao chép đáp án của người khác.
 >
-> Cách trả lời: thay dòng `> *Câu trả lời của bạn*` bằng câu trả lời.
+> Cách trả lời: thay dòng placeholder "câu trả lời của bạn" (dạng in nghiêng,
+> có dấu `>` ở đầu) ở mỗi câu bằng câu trả lời thật.
 > `grade.py` đếm số câu đã trả lời (15 điểm cho 10 câu).
 >
 > Họ và tên: Ngô Đức Chung  Mã học viên: 2A202602985
@@ -71,12 +72,34 @@ docker images | grep agent
 
 | Bản | Dung lượng |
 |-----|-----------|
-| 1 stage (bản đầu) | ... MB |
-| Multi-stage | ... MB |
+| 1 stage (bản đầu) | 1710 MB (1.71 GB) |
+| Multi-stage | 297 MB |
 
 Giải thích: phần dung lượng chênh lệch đó là những gì?
 
-> *Câu trả lời của bạn*
+> Build thật trên máy tôi (`docker images | grep agent`):
+>
+> ```
+> agent:single   1.71GB
+> agent:multi    297MB
+> ```
+>
+> Chênh lệch ~1.4GB đến từ ba nguồn, cả ba đều bị multi-stage loại bỏ khỏi
+> image cuối:
+> 1. **Base image đầy đủ vs slim**: bản 1-stage dùng `FROM python:3.11` (bản
+>    full, có sẵn toolchain biên dịch: gcc, make, các thư viện dev, docs, locale
+>    — nặng cỡ 1GB chỉ riêng base), còn multi-stage dùng `python:3.11-slim`
+>    (~130MB) cho CẢ HAI stage.
+> 2. **Build-time dependency không cần lúc chạy**: bản 1-stage cài
+>    `pip install` ngay trong image cuối, mang theo pip cache, các gói chỉ cần
+>    lúc build (compiler tạm thời cho các package có phần mở rộng C/Rust như
+>    `watchfiles`, `pydantic-core`). Multi-stage cài ở stage `builder` riêng,
+>    stage `runtime` chỉ `COPY --from=builder /install /usr/local` — lấy đúng
+>    file `.py`/`.so` đã build xong, không mang theo compiler hay cache pip.
+> 3. **Toàn bộ source code + rác build**: bản 1-stage `COPY . .` mang cả
+>    `.git`, `.venv`, `__pycache__`, `tests/` (nếu không có `.dockerignore` tốt)
+>    vào layer cuối; multi-stage chỉ `COPY app ./app` và `COPY utils ./utils`
+>    — đúng những gì cần để chạy, không hơn.
 
 ---
 
